@@ -1,0 +1,13 @@
+Variables:
+-Number of stops
+-Distance between each stops
+-Gas Price at each stop
+-Max capacity of truck
+
+Solve:
+-Minimize the total Cost
+
+Methods to try
+-Dynamic Programming (simpler problem first)
+-CP-SAT model
+-Optimization in linear programing or something 
