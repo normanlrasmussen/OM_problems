@@ -1,13 +1,110 @@
-Variables:
--Number of stops
--Distance between each stops
--Gas Price at each stop
--Max capacity of truck
+PROBLEM 1: GAS STATION OPTIMIZATION PROBLEM
+==========================================
 
-Solve:
--Minimize the total Cost
+PROBLEM DESCRIPTION
+-------------------
+You are planning a road trip and need to optimize your gas purchases along the route.
+The problem involves finding the optimal strategy to minimize the total cost of gas
+while traveling from a starting point to a final destination.
 
-Methods to try
--Dynamic Programming (simpler problem first)
--CP-SAT model
--Optimization in linear programing or something 
+You are given:
+- A route with N gas stations (locations)
+- For each location i:
+  * Distance to the next location (in gallons of fuel required)
+  * Gas price per gallon at that location
+- Maximum fuel capacity of your vehicle (MAX_FUEL)
+
+The goal is to determine:
+- Which gas stations to stop at
+- How much gas to purchase at each stop
+- The optimal path that minimizes total gas cost
+
+CONSTRAINTS
+-----------
+1. You must start at location 0 with 0 gallons of fuel
+2. You must reach the final destination (after all N locations)
+3. You cannot exceed the maximum fuel capacity (MAX_FUEL) at any time
+4. You cannot run out of fuel (must have enough to reach the next location)
+5. You can only purchase gas at the locations provided (gas stations)
+
+DATA FORMAT
+-----------
+The input data is a numpy array where each row represents a location:
+- Column 0: Distance to the next location (in gallons of fuel required)
+- Column 1: Gas price per gallon at that location
+
+Example:
+  data = [[100, 3.2],   # Location 0: 100 gallons to next, $3.20/gal
+          [100, 3.5],   # Location 1: 100 gallons to next, $3.50/gal
+          [100, 3.7],   # Location 2: 100 gallons to next, $3.70/gal
+          ...]
+
+SOLVERS
+-------
+
+1. CITY_TO_CITY_SOLVER
+   -------------------
+   Description:
+   This solver uses a simplified approach where you can only fill up exactly the
+   amount needed to reach a specific future location. It assumes you fill up
+   precisely enough fuel to get from your current location to a chosen destination
+   location (or the final destination).
+
+   Constraints:
+   - You can only fill up exactly the amount needed to reach a specific location
+   - You cannot partially fill up or carry excess fuel beyond what's needed
+   - The solver uses dynamic programming with state: current location
+   - Time complexity: O(N^2) where N is the number of locations
+   - Space complexity: O(N)
+
+   Algorithm:
+   - Works backwards from the destination
+   - For each location i, considers all possible future locations j to reach
+   - Calculates the cost of filling exactly enough to reach location j
+   - Selects the path with minimum total cost
+
+   Limitations:
+   - Less flexible than gas_to_gas_solver
+   - May not find the true optimal solution if partial fills are beneficial
+   - Assumes you always fill exactly to reach a specific location
+
+
+2. GAS_TO_GAS_SOLVER
+   -----------------
+   Description:
+   This solver is more flexible and allows you to fill up any amount of gas
+   (up to the maximum capacity) at each location. It tracks both your current
+   location and your current fuel level, making it a more comprehensive solution.
+
+   Constraints:
+   - You can fill up any amount of gas at each location (0 to MAX_FUEL)
+   - You must track both location and fuel level as state variables
+   - The solver uses dynamic programming with state: (location, fuel_level)
+   - Time complexity: O(N * MAX_FUEL^2) where N is the number of locations
+   - Space complexity: O(N * MAX_FUEL)
+
+   Algorithm:
+   - Works backwards from the destination
+   - For each location i and each possible fuel level g:
+     * Considers all possible amounts of gas to fill (g_use)
+     * Calculates resulting fuel level after traveling to next location
+     * Selects the fill amount that minimizes total cost
+   - Tracks optimal policy: how much gas to fill at each (location, fuel_level) state
+
+   Advantages:
+   - More flexible and finds the true optimal solution
+   - Can handle cases where partial fills are optimal
+   - Considers all possible fuel levels at each location
+
+   Limitations:
+   - More computationally expensive than city_to_city_solver
+   - Requires more memory due to 2D state space
+
+COMPARISON
+----------
+- city_to_city_solver: Faster, simpler, but less optimal (may miss better solutions)
+- gas_to_gas_solver: Slower, more complex, but finds the true optimal solution
+
+Both solvers use dynamic programming and work backwards from the destination,
+but they differ in their state representation and flexibility of gas purchases.
+
